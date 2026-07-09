@@ -1,8 +1,7 @@
-namespace InternetSpeedMeter.Services
+namespace InternetSpeedMeter.Services;
+
+public interface ISpeedService
 {
-    public interface ISpeedService
-    {
-        void StartService();
-        void StopService();
-    }
+    void StartService();
+    void StopService();
 }
