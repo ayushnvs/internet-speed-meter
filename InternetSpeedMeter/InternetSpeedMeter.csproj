@@ -70,4 +70,10 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.9"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Platforms\Android\SpeedService.cs">
+        <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+      </Compile>
+    </ItemGroup>
+
 </Project>
