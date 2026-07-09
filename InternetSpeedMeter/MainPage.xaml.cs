@@ -2,7 +2,7 @@
 
 public partial class MainPage : ContentPage
 {
-    int count = 0;
+    private int _count = 0;
 
     public MainPage()
     {
@@ -11,9 +11,9 @@ public partial class MainPage : ContentPage
 
     private void OnCounterClicked(object? sender, EventArgs e)
     {
-        count++;
+        _count++;
 
-        CounterBtn.Text = count == 1 ? $"Clicked {count} time" : $"Clicked {count} times";
+        CounterBtn.Text = _count == 1 ? $"Clicked {_count} time" : $"Clicked {_count} times";
 
         SemanticScreenReader.Announce(CounterBtn.Text);
     }
