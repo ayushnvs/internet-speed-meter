@@ -5,6 +5,8 @@ using Android.Net;
 using Android.OS;
 using AndroidX.Core.App;
 using AndroidX.Core.Graphics.Drawable;
+using CommunityToolkit.Mvvm.Messaging;
+using InternetSpeedMeter.Services;
 using Paint = Android.Graphics.Paint;
 using Color = Android.Graphics.Color;
 
@@ -16,11 +18,11 @@ public class SpeedMeterForegroundService : Service
     private const int NotificationId = 92901;
     private const string ChannelId = "SPEED_METER_CHANNEL";
     private bool _isRunning;
-    private CancellationTokenSource _cts;
+    private CancellationTokenSource _cts = null!;
 
-    public override IBinder OnBind(Intent intent) => null;
+    public override IBinder OnBind(Intent? intent) => null!;
 
-    public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
+    public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
     {
         _isRunning = true;
         _cts = new CancellationTokenSource();
@@ -65,7 +67,8 @@ public class SpeedMeterForegroundService : Service
             // Push messaging metrics directly back to UI layer via MAUI MessagingCenter or community patterns
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                MessagingCenter.Send(this, "SpeedUpdate", speedKb);
+                // MessagingCenter.Send(this, "SpeedUpdate", speedKb);
+                WeakReferenceMessenger.Default.Send(new SpeedUpdateMessage(speedKb));
             });
 
             // Dynamically refresh status bar asset layer configurations
@@ -74,7 +77,7 @@ public class SpeedMeterForegroundService : Service
         }
     }
 
-    private Notification BuildDynamicNotification(string speedText)
+    private Notification? BuildDynamicNotification(string speedText)
     {
         // Allocate a 48x48 pixel bounding block
         Bitmap bitmap = Bitmap.CreateBitmap(48, 48, Bitmap.Config.Argb8888);
@@ -109,21 +112,19 @@ public class SpeedMeterForegroundService : Service
 
         return new NotificationCompat.Builder(this, ChannelId)
             .SetContentTitle("Speed Meter Active")
-            .SetContentText($"Live Speed: {speedText}")
-            .SetSmallIcon(iconCompat)
-            .SetOngoing(true)
-            .SetPriority(NotificationCompat.PriorityMin)
-            .Build();
+            ?.SetContentText($"Live Speed: {speedText}")
+            ?.SetSmallIcon(iconCompat)
+            ?.SetOngoing(true)
+            ?.SetPriority(NotificationCompat.PriorityMin)
+            ?.Build();
     }
 
     private void CreateNotificationChannel()
     {
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-        {
-            var channel = new NotificationChannel(ChannelId, "Internet Speed Meter Monitoring", NotificationImportance.Low);
-            var manager = GetSystemService(NotificationService) as NotificationManager;
-            manager?.CreateNotificationChannel(channel);
-        }
+        if (Build.VERSION.SdkInt < BuildVersionCodes.O) return;
+        var channel = new NotificationChannel(ChannelId, "Internet Speed Meter Monitoring", NotificationImportance.Low);
+        var manager = GetSystemService(NotificationService) as NotificationManager;
+        manager?.CreateNotificationChannel(channel);
     }
 
     public override void OnDestroy()

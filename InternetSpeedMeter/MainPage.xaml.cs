@@ -1,4 +1,5 @@
-﻿using InternetSpeedMeter.Services;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using InternetSpeedMeter.Services;
 
 namespace InternetSpeedMeter
 {
@@ -15,8 +16,9 @@ namespace InternetSpeedMeter
             _speedService = DependencyService.Get<ISpeedService>();
 
             // Subscribe to real-time events coming from our background thread loop
-            MessagingCenter.Subscribe<object, double>(this, "SpeedUpdate", (sender, speedKb) =>
+            WeakReferenceMessenger.Default.Register<SpeedUpdateMessage>(this, (r, m) =>
             {
+                double speedKb = m.Value;
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     if (speedKb >= 1024)
@@ -55,7 +57,7 @@ namespace InternetSpeedMeter
                 var status = await Permissions.RequestAsync<Permissions.PostNotifications>();
                 if (status != PermissionStatus.Granted)
                 {
-                    await DisplayAlert("Permission Required", "Notification permissions are required to provide a system tray speed counter.", "OK");
+                    await DisplayAlertAsync("Permission Required", "Notification permissions are required to provide a system tray speed counter.", "OK");
                     return;
                 }
 
